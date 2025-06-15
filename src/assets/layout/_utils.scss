@@ -1,0 +1,73 @@
+/* Utils */
+.clearfix:after {
+    content: ' ';
+    display: block;
+    clear: both;
+}
+
+.card {
+    background: #ffffff; // var(--surface-card);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: var(--content-border-radius);
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.p-toast {
+    &.p-toast-top-right,
+    &.p-toast-top-left,
+    &.p-toast-top-center {
+        top: 100px;
+    }
+}
+
+.p-datepicker {
+    .p-inputtext {
+        &.p-variant-filled {
+            border-radius: var(--borderRadius, 4px) var(--borderRadius, 4px) var(--none, 0px) var(--none, 0px);
+            background: var(--_components-input-filled-enabledFill, rgba(0, 0, 0, 0.06));
+            padding: 16px 12px;
+            border: none;
+            border-bottom: solid thin rgba(0, 0, 0, 0.42);
+
+            color: var(--Grey-400, #666);
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: 24px; /* 150% */
+            letter-spacing: 0.15px;
+        }
+    }
+
+    &.p-focus {
+        .p-inputtext {
+            &.p-variant-filled {
+                border-bottom: solid thin #126f66;
+            }
+        }
+    }
+}
+
+.p-inputtext {
+    &.p-variant-filled {
+        border-radius: var(--borderRadius, 4px) var(--borderRadius, 4px) var(--none, 0px) var(--none, 0px);
+        background: var(--_components-input-filled-enabledFill, rgba(0, 0, 0, 0.06));
+        padding: 16px 12px;
+        border: none;
+        border-bottom: solid thin rgba(0, 0, 0, 0.42);
+
+        color: var(--Grey-400, #666);
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 24px; /* 150% */
+        letter-spacing: 0.15px;
+    }
+}
+
+.p-paginator {
+    background: transparent !important;
+}
