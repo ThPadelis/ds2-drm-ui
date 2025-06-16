@@ -1,66 +1,58 @@
 <script setup>
-import { useAuthStore } from '@/stores/authStore';
-import { useToast } from 'primevue';
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useAuthRouter } from '@/composables/useAuthRouter';
+import { useAuthStore } from '@/stores/authStoreNew';
+import { storeToRefs } from 'pinia';
 
-const toast = useToast();
-const { push } = useRouter();
 const authStore = useAuthStore();
+const { navigateIfAuthorized } = useAuthRouter();
+const { isLoggedIn } = storeToRefs(authStore);
 
-const username = ref(''); // user2Org1TEST
-const organisation = ref(''); // Org1MSP
-
-const canActivate = computed(() => {
-    const _username = username.value.trim();
-    const _organisation = organisation.value.trim();
-    return _username.length !== 0 && _organisation.length !== 0;
-});
-
-const onSubmit = () => {
-    authStore
-        .login(username.value, organisation.value)
-        .then(() => {
-            toast.add({
-                severity: 'success',
-                summary: 'Login Successful',
-                detail: 'Welcome back!',
-                life: 3000
-            });
-            setTimeout(() => {
-                push({ name: 'dashboard' });
-            }, 2000);
-        })
-        .catch((error) => {
-            toast.add({
-                severity: 'error',
-                summary: 'Login Failed',
-                detail: 'Invalid username or organisation',
-                life: 3000
-            });
-            console.error('Login failed:', error);
-        });
+const goToDashboard = () => {
+    navigateIfAuthorized('dashboard', []);
 };
 </script>
 
 <template>
-    <div class="flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden relative">
-        <div class="absolute top-0 left-0 p-4 w-full h-28 md:h-32 lg:h-[174px] transition-all">
-            <img src="/images/ds2-logo.png" alt="DS2 Logo" class="w-auto h-full object-contain" />
+    <div class="flex flex-col md:flex-row h-screen justify-center">
+        <!-- Left side with image and logo -->
+        <div class="w-2/3 flex flex-col justify-center items-center bg-gradient-to-br from-white to-primary-50">
+            <img src="/images/ds2-logo.png" alt="DataSpace 2 logo" class="absolute top-8 left-8 w-24" />
+            <img src="https://portal.ds2.icelab.cloud/assets/main.png" alt="Illustration" class="hidden md:block w-2/3 max-w-xl" />
         </div>
-        <div class="flex flex-col items-center justify-center">
-            <div class="p-4 rounded-md shadow-custom-xl">
-                <div class="flex flex-col w-full gap-6">
-                    <div class="title">Sign in</div>
-                    <InputText type="text" placeholder="Username" class="w-full md:w-[320px]" v-model="username" variant="filled" />
-                    <InputText type="text" placeholder="Organisation" fluid="" v-model="organisation" variant="filled" />
-                    <!-- <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true" fluid :feedback="false" variant="filled"></Password> -->
-                    <Button label="Sign In" class="w-full" @click="onSubmit" :disabled="!canActivate"></Button>
+
+        <!-- Right side with login box -->
+        <div class="w-full md:w-1/3 flex items-center justify-center">
+            <div class="text-center max-w-sm px-6 font-['Questrial']">
+                <h1 class="text-4xl font-bold text-primary mb-4">Welcome to DS2</h1>
+                <p class="text-xl text-gray-600 mb-2">Trusted data exchange across sectors</p>
+                <p class="font-semibold text-gray-800 mb-6">
+                    <span class="text-black">secure</span> | <span class="text-black">sovereign</span> |
+                    <span class="text-black">scalable</span>
+                </p>
+
+                <div class="flex flex-col justify-center items-center mb-4">
+                    <dash-button
+                        v-if="!isLoggedIn"
+                        keycloak-uri="https://keycloak.ds2.icelab.cloud/"
+                        realm="ds2"
+                        client-id="dashbtn"
+                        auth-method="check-sso"
+                        portal-url="/"
+                        show-post-login-text="false"
+                        primary-color="#126f66"
+                        secondary-color="#22d6c5"
+                        menu-view-type="list"
+                    ></dash-button>
+                    <Button v-else class="!px-8 !py-4" label="Go to Dashboard" size="large" @click="goToDashboard" />
                 </div>
+
+                <p class="text-gray-600">
+                    Not registered yet?
+                    <a href="https://portal.ds2.icelab.cloud/register" class="text-primary hover:underline">Create an account</a>
+                </p>
             </div>
         </div>
     </div>
-    <Toast />
 </template>
 
 <style scoped>

@@ -1,5 +1,6 @@
 <script setup>
 import { useDateFilter } from '@/layout/composables/useDateFilter';
+import { useDateFormatter } from '@/layout/composables/useDateFormatter';
 import { useStringTransformer } from '@/layout/composables/useStringTransformer';
 import { useLogsStore } from '@/stores/logsStore';
 import { useDialog } from 'primevue';
@@ -9,6 +10,7 @@ const LogViewDialog = defineAsyncComponent(() => import('./LogViewDialog.vue'));
 
 const dialog = useDialog();
 const { toIso } = useDateFilter();
+const { patternFormat } = useDateFormatter();
 const { toSentence } = useStringTransformer();
 const logsStore = useLogsStore();
 const { updateDate } = logsStore;
@@ -125,10 +127,12 @@ const maxDate = ref(new Date());
             <template #body="{ data }"> {{ toSentence(data.docType) }} </template>
         </Column>
         <Column field="created" header="Created Date">
-            <template #body="{ data }"> {{ toIso(data.created) }} </template>
+            <!-- <template #body="{ data }"> {{ toIso(data.created) }} </template> -->
+            <template #body="{ data }"> {{ patternFormat(data.created) }} </template>
         </Column>
         <Column field="modified" header="Modified Date">
-            <template #body="{ data }"> {{ toIso(data.modified) }} </template>
+            <!-- <template #body="{ data }"> {{ toIso(data.modified) }} </template> -->
+            <template #body="{ data }"> {{ patternFormat(data.modified) }} </template>
         </Column>
         <Column header="Action">
             <template #body="{ data }">
