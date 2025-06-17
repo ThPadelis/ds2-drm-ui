@@ -1,5 +1,5 @@
 import AppLayout from '@/layout/AppLayout.vue';
-import { useAuthStore } from '@/stores/authStoreNew';
+import { useAuthStore } from '@/stores/authStore';
 // import { useAuthStore } from '@/stores/authStore';
 import { createRouter, createWebHistory } from 'vue-router';
 

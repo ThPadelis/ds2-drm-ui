@@ -1,13 +1,18 @@
+import { generateUUID } from '@/utils/uuid';
 import axios from 'axios';
 import { endOfDay, startOfDay } from 'date-fns';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+
 export const useLogsStore = defineStore(
     'logs',
     () => {
         const state = ref({
             isLoading: false,
             data: [],
+            typeOptions: [],
+            authorOptions: [],
+            docTypeOptions: [],
             error: null,
             startDate: null,
             endDate: null
@@ -26,7 +31,23 @@ export const useLogsStore = defineStore(
                     organization: 'Org1MSP',
                     logType
                 });
-                state.value.data = data;
+
+                state.value.typeOptions = [...data]
+                    .map((log) => log.type)
+                    .filter((value, index, self) => self.indexOf(value) === index)
+                    .sort((a, b) => a.localeCompare(b));
+
+                state.value.authorOptions = [...data]
+                    .map((log) => log.authorID)
+                    .filter((value, index, self) => self.indexOf(value) === index)
+                    .sort((a, b) => a.localeCompare(b));
+
+                state.value.docTypeOptions = [...data]
+                    .map((log) => log.docType)
+                    .filter((value, index, self) => self.indexOf(value) === index)
+                    .sort((a, b) => a.localeCompare(b));
+
+                state.value.data = [...data].map((log) => ({ ...log, uuid: generateUUID() }));
             } catch (error) {
                 state.value.data = [];
                 state.value.error = error;
@@ -56,6 +77,10 @@ export const useLogsStore = defineStore(
         });
         const isLoading = computed(() => state.value.isLoading);
 
+        const typeOptions = computed(() => state.value.typeOptions || []);
+        const authorOptions = computed(() => state.value.authorOptions || []);
+        const docTypeOptions = computed(() => state.value.docTypeOptions || []);
+
         const reset$ = () => {
             state.value.startDate = null;
             state.value.endDate = null;
@@ -63,7 +88,7 @@ export const useLogsStore = defineStore(
             state.value.isLoading = false;
             state.value.error = null;
         };
-        return { state, data, filteredData, isLoading, getLogs, updateDate, reset$ };
+        return { state, data, filteredData, isLoading, typeOptions, authorOptions, docTypeOptions, getLogs, updateDate, reset$ };
     },
     {
         persist: {

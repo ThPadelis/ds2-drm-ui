@@ -1,21 +1,16 @@
 <script setup>
-import { useDateFilter } from '@/layout/composables/useDateFilter';
+import { useDateFormatter } from '@/layout/composables/useDateFormatter';
 import { useStringTransformer } from '@/layout/composables/useStringTransformer';
-import { computed, inject, onMounted } from 'vue';
+import { generateColumns, getValueByPath } from '@/utils/objectHelper';
+import { computed, inject } from 'vue';
 
-const { toIso } = useDateFilter();
 const { toSentence } = useStringTransformer();
 const dialogRef = inject('dialogRef');
+const { formatDate } = useDateFormatter();
 const data = computed(() => dialogRef.value.data);
 
-const close = () => {
-    dialogRef.value.close();
-};
-
-onMounted(() => {
-    const params = dialogRef.value.data;
-    console.log('Dialog params:', params);
-});
+const tableData = computed(() => [data.value.payload]);
+const columns = generateColumns(data.value.payload);
 </script>
 
 <template>
@@ -28,7 +23,7 @@ onMounted(() => {
 
             <div class="flex flex-col gap-2 text-sm">
                 <span class="text-[#666666]">Type:</span>
-                <span>{{ toSentence(data.type) }}</span>
+                <span>{{ data.type }}</span>
             </div>
 
             <div class="flex flex-col gap-2 text-sm">
@@ -43,20 +38,25 @@ onMounted(() => {
 
             <div class="flex flex-col gap-2 text-sm">
                 <span class="text-[#666666]">Created Date:</span>
-                <span>{{ toIso(data.created) }}</span>
+                <span>{{ formatDate(data.created, 'EEEE, MMMM dd, yyyy HH:mm') }}</span>
             </div>
 
             <div class="flex flex-col gap-2 text-sm">
                 <span class="text-[#666666]">Modified Date:</span>
-                <span>{{ toIso(data.modified) }}</span>
+                <span>{{ formatDate(data.modified, 'EEEE, MMMM dd, yyyy HH:mm') }}</span>
             </div>
         </div>
 
         <div class="flex flex-col gap-1">
-            <p class="mb-0">Payload:</p>
-            <div class="block p-4 bg-[#494949] text-white whitespace-pre">
-                <pre>{{ data.payload }}</pre>
-            </div>
+            <p class="mb-0">Details:</p>
+
+            <DataTable :value="tableData" scrollable>
+                <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" class="min-w-52">
+                    <template #body="{ data }">
+                        {{ col.formatter(getValueByPath(data, col.field)) }}
+                    </template>
+                </Column>
+            </DataTable>
         </div>
     </div>
 </template>

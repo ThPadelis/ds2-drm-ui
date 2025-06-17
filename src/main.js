@@ -12,7 +12,6 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import { authPlugin } from './plugins/authPlugin';
 import router from './router';
-import LocalStorageWatcher from './utils/localStorageWatcher';
 
 const DS2Preset = definePreset(Aura, {
     semantic: {
@@ -177,9 +176,6 @@ app.use(PrimeVue, {
 app.use(ToastService);
 app.use(DialogService);
 app.use(ConfirmationService);
-
-// Create a singleton instance
-const localStorageWatcher = new LocalStorageWatcher();
 
 app.use(authPlugin);
 defineCustomElements(window);

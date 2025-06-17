@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores/authStoreNew';
+import { useAuthStore } from '@/stores/authStore';
 
 export const authPlugin = {
     install(app) {

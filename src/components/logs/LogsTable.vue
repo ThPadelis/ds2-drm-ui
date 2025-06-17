@@ -1,21 +1,21 @@
 <script setup>
-import { useDateFilter } from '@/layout/composables/useDateFilter';
 import { useDateFormatter } from '@/layout/composables/useDateFormatter';
 import { useStringTransformer } from '@/layout/composables/useStringTransformer';
 import { useLogsStore } from '@/stores/logsStore';
+import { FilterMatchMode } from '@primevue/core/api';
+import { storeToRefs } from 'pinia';
 import { useDialog } from 'primevue';
 import { defineAsyncComponent, markRaw, ref } from 'vue';
 const LogViewFooterDialog = defineAsyncComponent(() => import('./LogViewFooterDialog.vue'));
 const LogViewDialog = defineAsyncComponent(() => import('./LogViewDialog.vue'));
 
 const dialog = useDialog();
-const { toIso } = useDateFilter();
-const { patternFormat } = useDateFormatter();
 const { toSentence } = useStringTransformer();
 const logsStore = useLogsStore();
-const { updateDate } = logsStore;
+const { typeOptions, authorOptions, docTypeOptions } = storeToRefs(logsStore);
+const { formatDate } = useDateFormatter();
 
-const { logs } = defineProps({
+const { logs, isLoading } = defineProps({
     logs: {
         type: Array,
         default: () => []
@@ -28,32 +28,9 @@ const { logs } = defineProps({
 
 const perPageOptions = [5, 10, 20, 50];
 const selectedPerPage = ref(5);
-const selectedRow = ref(null);
-const menu = ref();
-const items = ref([
-    {
-        label: 'Options',
-        items: [
-            {
-                label: 'View',
-                icon: 'pi pi-pencil',
-                command: () => {
-                    console.log('View clicked');
-                    console.log('Selected Row:', selectedRow.value);
-                    showLogViewDialog(selectedRow.value);
-                }
-            }
-        ]
-    }
-]);
-
-const toggle = (event, data) => {
-    menu.value.toggle(event);
-    selectedRow.value = data;
-};
 
 const showLogViewDialog = (data) => {
-    const dialogRef = dialog.open(LogViewDialog, {
+    dialog.open(LogViewDialog, {
         data,
         props: {
             header: 'View log',
@@ -75,74 +52,111 @@ const showLogViewDialog = (data) => {
     });
 };
 
-const startDate = ref();
-const endDate = ref();
-const maxDate = ref(new Date());
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    type: { value: null, matchMode: FilterMatchMode.IN },
+    authorID: { value: null, matchMode: FilterMatchMode.IN },
+    docType: { value: null, matchMode: FilterMatchMode.IN },
+    created: { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL_TO },
+    modified: { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL_TO }
+});
+
+const onDateValueChange = (key, $event) => {
+    filters.value[key].value = +new Date($event);
+};
 </script>
 
 <template>
-    <div class="mb-6">
-        <div class="mb-6">Filter by Time Range</div>
+    <DataTable dataKey="uuid" filterDisplay="row" paginator stripedRows scrollable :rows="5" :filters="filters" :autoLayout="true" :value="logs" :loading="isLoading" :globalFilterFields="['type', 'authorID', 'docType']" tableStyle="min-width: 70rem">
+        <template #header>
+            <div class="flex justify-end">
+                <IconField>
+                    <InputIcon>
+                        <i class="pi pi-search" />
+                    </InputIcon>
+                    <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
+                </IconField>
+            </div>
+        </template>
 
-        <div class="grid grid-cols-4 gap-6">
-            <div>
-                <DatePicker
-                    showButtonBar
-                    :maxDate="maxDate"
-                    @clear-click="updateDate('startDate', null)"
-                    @date-select="updateDate('startDate', +new Date($event))"
-                    dateFormat="dd/mm/yy"
-                    variant="filled"
-                    placeholder="Start Date Time"
-                    v-model="startDate"
-                    showIcon
-                    fluid
-                    iconDisplay="input"
-                />
-            </div>
-            <div>
-                <DatePicker
-                    showButtonBar
-                    :maxDate="maxDate"
-                    @clear-click="updateDate('endDate', null)"
-                    @date-select="updateDate('endDate', +new Date($event))"
-                    dateFormat="dd/mm/yy"
-                    variant="filled"
-                    placeholder="End Date Time"
-                    v-model="endDate"
-                    showIcon
-                    fluid
-                    iconDisplay="input"
-                />
-            </div>
-        </div>
-    </div>
-    <DataTable :value="logs" scrollable :loading="isLoading" tableStyle="min-width: 50rem" paginator :rows="5">
-        <Column field="Key" header="ID"></Column>
-        <Column field="type" header="Type">
-            <template #body="{ data }"> {{ data.type }} </template>
-        </Column>
-        <Column field="authorID" header="Author"></Column>
-        <Column field="docType" header="Document Type">
-            <template #body="{ data }"> {{ toSentence(data.docType) }} </template>
-        </Column>
-        <Column field="created" header="Created Date">
-            <!-- <template #body="{ data }"> {{ toIso(data.created) }} </template> -->
-            <template #body="{ data }"> {{ patternFormat(data.created) }} </template>
-        </Column>
-        <Column field="modified" header="Modified Date">
-            <!-- <template #body="{ data }"> {{ toIso(data.modified) }} </template> -->
-            <template #body="{ data }"> {{ patternFormat(data.modified) }} </template>
-        </Column>
-        <Column header="Action">
-            <template #body="{ data }">
-                <Button type="button" icon="pi pi-ellipsis-v" plain text @click="toggle($event, data)" aria-haspopup="true" aria-controls="overlay_menu" />
-                <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
+        <Column filterField="type" header="Type" :showFilterMenu="false" class="w-[20rem]">
+            <template #body="{ data }">{{ data.type }}</template>
+            <template #filter="{}">
+                <MultiSelect v-model="filters['type'].value" :options="typeOptions" placeholder="Any" :maxSelectedLabels="1">
+                    <template #option="slotProps">
+                        <div class="flex items-center gap-2">
+                            <span>{{ slotProps.option }}</span>
+                        </div>
+                    </template>
+                </MultiSelect>
             </template>
         </Column>
+
+        <Column filterField="authorID" header="Author" :showFilterMenu="false" class="w-[20rem]">
+            <template #body="{ data }">{{ data.authorID }}</template>
+            <template #filter="{}">
+                <MultiSelect v-model="filters['authorID'].value" :options="authorOptions" placeholder="Any" :maxSelectedLabels="1">
+                    <template #option="slotProps">
+                        <div class="flex items-center gap-2">
+                            <span>{{ slotProps.option }}</span>
+                        </div>
+                    </template>
+                </MultiSelect>
+            </template>
+        </Column>
+
+        <Column filterField="docType" header="Entry Type" :showFilterMenu="false" class="w-[20rem]">
+            <template #body="{ data }">{{ toSentence(data.docType) }}</template>
+            <template #filter="{}">
+                <MultiSelect v-model="filters['docType'].value" :options="docTypeOptions" placeholder="Any" :maxSelectedLabels="1">
+                    <template #option="slotProps">
+                        <div class="flex items-center gap-2">
+                            <span>{{ slotProps.option }}</span>
+                        </div>
+                    </template>
+                </MultiSelect>
+            </template>
+        </Column>
+
+        <Column field="created" header="Created Date" dataType="numeric" :showFilterMenu="false" class="w-[20rem]">
+            <template #body="{ data }"> {{ formatDate(data.created, 'MMMM dd, yyyy') }} </template>
+            <template #filter="{ filterCallback }">
+                <DatePicker
+                    dateFormat="dd/mm/yy"
+                    placeholder="dd/mm/yyyy"
+                    showButtonBar
+                    @update:model-value="
+                        onDateValueChange('created', $event);
+                        filterCallback();
+                    "
+                />
+            </template>
+        </Column>
+
+        <Column field="modified" header="Modified Date" dataType="date" :showFilterMenu="false" class="w-[20rem]">
+            <template #body="{ data }"> {{ formatDate(data.modified, 'MMMM dd, yyyy') }} </template>
+            <template #filter="{}">
+                <DatePicker
+                    dateFormat="dd/mm/yy"
+                    placeholder="dd/mm/yyyy"
+                    showButtonBar
+                    @update:model-value="
+                        onDateValueChange('modified', $event);
+                        filterCallback();
+                    "
+                />
+            </template>
+        </Column>
+
+        <Column class="w-10 text-center">
+            <template #body="{ data }">
+                <Button icon="pi pi-search" @click="showLogViewDialog(data)" plain text rounded></Button>
+            </template>
+        </Column>
+
         <template #empty> No logs found. </template>
 
-        <template #paginatorcontainer="{ first, last, page, pageCount, prevPageCallback, nextPageCallback, totalRecords, rowChangeCallback, rows }">
+        <template #paginatorcontainer="{ first, last, page, pageCount, prevPageCallback, nextPageCallback, totalRecords, rowChangeCallback }">
             <div class="flex justify-end items-center gap-4 bg-transparent w-full py-4">
                 <div class="flex items-center gap-2">
                     <span>Rows per page: </span>
@@ -162,6 +176,19 @@ const maxDate = ref(new Date());
 
 <style lang="scss" scoped>
 .p-inputtext {
-    background: red !important;
+    border-width: 2px;
+    width: 100%;
+}
+
+.p-datepicker {
+    width: 100%;
+
+    .p-inputtext {
+        border-width: 2px;
+    }
+}
+
+.p-multiselect {
+    width: 100%;
 }
 </style>

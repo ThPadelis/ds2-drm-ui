@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores/authStoreNew';
+import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 
 // Composable for programmatic navigation with auth checks

@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores/authStoreNew';
+import { useAuthStore } from '@/stores/authStore';
 import { onMounted, onUnmounted } from 'vue';
 
 export function useAuth() {

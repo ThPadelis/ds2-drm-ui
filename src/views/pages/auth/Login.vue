@@ -1,6 +1,6 @@
 <script setup>
 import { useAuthRouter } from '@/composables/useAuthRouter';
-import { useAuthStore } from '@/stores/authStoreNew';
+import { useAuthStore } from '@/stores/authStore';
 import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
@@ -17,7 +17,7 @@ const goToDashboard = () => {
         <!-- Left side with image and logo -->
         <div class="w-2/3 flex flex-col justify-center items-center bg-gradient-to-br from-white to-primary-50">
             <img src="/images/ds2-logo.png" alt="DataSpace 2 logo" class="absolute top-8 left-8 w-24" />
-            <img src="https://portal.ds2.icelab.cloud/assets/main.png" alt="Illustration" class="hidden md:block w-2/3 max-w-xl" />
+            <img src="/images/main.png" alt="Illustration" class="hidden md:block w-2/3 max-w-xl" />
         </div>
 
         <!-- Right side with login box -->
@@ -55,29 +55,4 @@ const goToDashboard = () => {
     </div>
 </template>
 
-<style scoped>
-.pi-eye {
-    transform: scale(1.6);
-    margin-right: 1rem;
-}
-
-.pi-eye-slash {
-    transform: scale(1.6);
-    margin-right: 1rem;
-}
-
-.title {
-    color: var(--Primary-800, #126f66);
-    text-align: center;
-    font-feature-settings:
-        'liga' off,
-        'clig' off;
-
-    font-family: 'Questrial', sans-serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
-    letter-spacing: 0.15px;
-}
-</style>
+<style scoped></style>

@@ -1,0 +1,11 @@
+# Build directories
+build/*
+dist/*
+public/*
+**/out/*
+**/.next/*
+.vscode/*
+**/node_modules/*
+
+package-lock.json
+jsconfig.json
