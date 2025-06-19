@@ -1,0 +1,32 @@
+image: atlassian/default-image:3
+
+pipelines:
+    default:
+        - step:
+              name: Build and Push Docker Image
+              services:
+                  - docker
+              caches:
+                  - docker
+              script:
+                  - echo $CI_DOCKERHUB_PASSWORD | docker login -u $CI_DOCKERHUB_USERNAME --password-stdin
+                  - docker build -t atchub/ilab-ds2-drm-ui .
+                  - docker push atchub/ilab-ds2-drm-ui
+        - step:
+              name: Deploy to Remote Server
+              script:
+                  - pipe: atlassian/ssh-run:0.5.0
+                    variables:
+                        SSH_USER: $SSH_USER
+                        SERVER: $SSH_HOST
+                        COMMAND: |
+                            echo $CI_DOCKERHUB_PASSWORD | docker login -u $CI_DOCKERHUB_USERNAME --password-stdin
+                            docker pull atchub/ilab-ds2-drm-ui
+                            docker stop ilab-ds2-drm-ui-1 || true
+                            docker rm ilab-ds2-drm-ui-1 || true
+                            docker run -d -p 8080:80 --rm --name ilab-ds2-drm-ui-1 atchub/ilab-ds2-drm-ui
+
+definitions:
+    services:
+        docker:
+            memory: 3072
