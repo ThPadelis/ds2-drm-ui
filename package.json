@@ -8,6 +8,9 @@
         "lint": "eslint --fix . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
         "docker:local": "docker build --no-cache -t atchub/ilab-ds2-drm-ui .",
         "postdocker:local": "docker run -d -p 8080:80 --rm --name ilab-ds2-drm-ui-1 atchub/ilab-ds2-drm-ui",
+        "predocker:prod": "docker login",
+        "docker:prod": "docker build -t atchub/ilab-ds2-drm-ui .",
+        "postdocker:prod": "docker push atchub/ilab-ds2-drm-ui",
         "prepare": "node .husky/install.mjs"
     },
     "dependencies": {
