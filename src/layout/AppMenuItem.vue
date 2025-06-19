@@ -29,18 +29,36 @@ const props = defineProps({
 const isActiveMenu = ref(false);
 const itemKey = ref(null);
 
+// Helper: recursively check if route matches item or any children
+function isRouteActive(item, currentPath) {
+    if (item.to) {
+        if (item.to === '/' && currentPath === '/') {
+            return true;
+        }
+        if (item.to !== '/' && item.to === currentPath) {
+            return true;
+        }
+    }
+    if (item.items && Array.isArray(item.items)) {
+        return item.items.some((child) => isRouteActive(child, currentPath));
+    }
+    return false;
+}
+
 onBeforeMount(() => {
     itemKey.value = props.parentItemKey ? props.parentItemKey + '-' + props.index : String(props.index);
 
     const activeItem = layoutState.activeMenuItem;
+    const routeActive = isRouteActive(props.item, route.path);
 
-    isActiveMenu.value = activeItem === itemKey.value || activeItem ? activeItem.startsWith(itemKey.value + '-') : false;
+    isActiveMenu.value = routeActive || activeItem === itemKey.value || (activeItem ? activeItem.startsWith(itemKey.value + '-') : false);
 });
 
 watch(
-    () => layoutState.activeMenuItem,
-    (newVal) => {
-        isActiveMenu.value = newVal === itemKey.value || newVal.startsWith(itemKey.value + '-');
+    () => [layoutState.activeMenuItem, route.path],
+    ([newVal, newRoute]) => {
+        const routeActive = isRouteActive(props.item, newRoute);
+        isActiveMenu.value = routeActive || newVal === itemKey.value || (newVal ? newVal.startsWith(itemKey.value + '-') : false);
     }
 );
 
