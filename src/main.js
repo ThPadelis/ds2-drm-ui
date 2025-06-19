@@ -1,7 +1,6 @@
 import '@/assets/styles.scss';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
-import { defineCustomElements } from 'dash-button-web/loader';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import PrimeVue from 'primevue/config';
@@ -178,6 +177,5 @@ app.use(DialogService);
 app.use(ConfirmationService);
 
 app.use(authPlugin);
-defineCustomElements(window);
 
 app.mount('#app');

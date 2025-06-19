@@ -7,8 +7,7 @@ import { defineConfig } from 'vite';
 // https://vitejs.dev/config/
 export default defineConfig({
     optimizeDeps: {
-        noDiscovery: true,
-        include: ['dash-button-web']
+        noDiscovery: false
     },
     plugins: [
         vue({
