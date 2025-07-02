@@ -2,7 +2,7 @@
 import { useDateFormatter } from '@/layout/composables/useDateFormatter';
 import { useStringTransformer } from '@/layout/composables/useStringTransformer';
 import { generateColumns, getValueByPath } from '@/utils/objectHelper';
-import { computed, inject } from 'vue';
+import { computed, inject, ref } from 'vue';
 
 const { toSentence } = useStringTransformer();
 const dialogRef = inject('dialogRef');
@@ -11,6 +11,8 @@ const data = computed(() => dialogRef.value.data);
 
 const tableData = computed(() => [data.value.payload]);
 const columns = generateColumns(data.value.payload);
+
+const advancedView = ref(false);
 </script>
 
 <template>
@@ -48,9 +50,19 @@ const columns = generateColumns(data.value.payload);
         </div>
 
         <div class="flex flex-col gap-1">
-            <p class="mb-0">Details:</p>
+            <div class="flex justify-between items-center">
+                <p class="mb-0">Details:</p>
+                <div class="flex items-center gap-2">
+                    <span>Table</span>
+                    <InputSwitch v-model="advancedView" />
+                    <span>Advanced</span>
+                </div>
+            </div>
 
-            <DataTable :value="tableData" scrollable>
+            <div v-if="advancedView" class="bg-gray-100 p-4 rounded border overflow-auto">
+                <pre>{{ JSON.stringify(data, null, 2) }}</pre>
+            </div>
+            <DataTable v-else :value="tableData" scrollable>
                 <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" class="min-w-52">
                     <template #body="{ data }">
                         {{ col.formatter(getValueByPath(data, col.field)) }}

@@ -10,6 +10,6 @@ const closeDialog = (e) => {
 
 <template>
     <div class="flex w-full">
-        <Button type="button" label="Cancel" @click="closeDialog({ buttonType: 'Cancel' })" autofocus></Button>
+        <Button type="button" label="Close" @click="closeDialog({ buttonType: 'Cancel' })" autofocus></Button>
     </div>
 </template>
