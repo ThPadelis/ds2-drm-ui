@@ -10,20 +10,38 @@ export const flattenObject = (obj, parentKey = '', result = {}) => {
             const value = obj[key];
 
             if (value && typeof value === 'object' && !Array.isArray(value)) {
+                // Recursively flatten nested objects
                 flattenObject(value, newKey, result);
+            } else if (Array.isArray(value)) {
+                if (value.length === 0) {
+                    result[newKey] = [];
+                } else if (value.every((item) => !item || typeof item !== 'object')) {
+                    // Array of primitives - join with comma
+                    result[newKey] = value.join(',');
+                } else {
+                    // Array of objects - flatten each object recursively
+                    value.forEach((item, index) => {
+                        const arrayKey = `${newKey}[${index}]`;
+                        if (item && typeof item === 'object' && !Array.isArray(item)) {
+                            flattenObject(item, arrayKey, result);
+                        } else {
+                            result[arrayKey] = item;
+                        }
+                    });
+                }
             } else {
-                result[newKey] = Array.isArray(value) ? JSON.stringify(value) : value;
+                result[newKey] = value;
             }
         }
     }
     return result;
 };
 
-export const generateColumns = (flattenedObj) => {
+export const generateColumns = (flattenedObj, keepLastPart = true) => {
     return Object.keys(flattenedObj).map((key) => {
         return {
             field: key,
-            header: stringFormatter.toSentence(key.split('.').pop()), // Last part of key as header
+            header: stringFormatter.toSentence(keepLastPart ? key.split('.').pop() : key), // Last part of key as header
             formatter: (value) => {
                 if (key.toLowerCase().includes('timestamp') || key === 'created' || key === 'modified') {
                     const num = Number(value);
@@ -34,7 +52,7 @@ export const generateColumns = (flattenedObj) => {
                     }
                 }
 
-                return value !== null && typeof value === 'object' ? JSON.stringify(value) : String(value);
+                return value !== null && typeof value === 'object' ? value : String(value);
             }
         };
     });

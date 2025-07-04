@@ -1,7 +1,7 @@
 <script setup>
 import { useDateFormatter } from '@/layout/composables/useDateFormatter';
 import { useStringTransformer } from '@/layout/composables/useStringTransformer';
-import { generateColumns, getValueByPath } from '@/utils/objectHelper';
+import { flattenObject, generateColumns } from '@/utils/objectHelper';
 import { computed, inject, ref } from 'vue';
 
 const { toSentence } = useStringTransformer();
@@ -9,8 +9,9 @@ const dialogRef = inject('dialogRef');
 const { formatDate } = useDateFormatter();
 const data = computed(() => dialogRef.value.data);
 
-const tableData = computed(() => [data.value.payload]);
-const columns = generateColumns(data.value.payload);
+const flat = computed(() => flattenObject(data.value.payload));
+const tableData = computed(() => [flat.value]);
+const columns = generateColumns(flat.value, false);
 
 const advancedView = ref(false);
 </script>
@@ -64,8 +65,8 @@ const advancedView = ref(false);
             </div>
             <DataTable v-else :value="tableData" scrollable>
                 <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header" class="min-w-52">
-                    <template #body="{ data }">
-                        {{ col.formatter(getValueByPath(data, col.field)) }}
+                    <template #body="{ data, field }">
+                        {{ data[field] }}
                     </template>
                 </Column>
             </DataTable>
